@@ -61,7 +61,11 @@ for f in sorted(glob.glob(os.path.join(src, '*.html'))):
         pb = block(build, 'Playstyle')
         if pb:
             d = pb.find('div', class_='text-sm')
-            c['playstyle'] = [x.strip() for x in d.get_text('\n').split('\n') if x.strip()] if d else []
+            if d:
+                for br in d.find_all('br'): br.replace_with('\u2029')
+                raw = d.get_text(' ')
+                c['playstyle'] = [re.sub(r'\s+([,.;:!?)])', r'\1', re.sub(r'\s+', ' ', x)).strip() for x in raw.split('\u2029') if x.strip()]
+            else: c['playstyle'] = []
         def links(kind):
             return [txt(a) for a in build.select(f'a[href*="/{kind}/"]')]
         c['wheels'] = links('wheels'); c['covenants'] = links('covenants'); c['posse'] = links('posses')

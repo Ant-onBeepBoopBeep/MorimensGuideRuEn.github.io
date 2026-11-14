@@ -69,6 +69,54 @@
   const kwTitle = w => { for (const [k, t] of KW) { if (new RegExp('^' + k + '$').test(w)) return t; } return ''; };
   const kw = s => esc(s).replace(KWRE, m => `<span class="kw" title="${esc(kwTitle(m))}">${m}</span>`);
 
+  /* ---------- Язык описаний: русский перевод или оригинал ---------- */
+  const RU = window.RU || {};
+  let LANG = 'ru';
+  try { LANG = localStorage.getItem('mm-lang') || 'ru'; } catch (e) { }
+  const isRu = () => LANG === 'ru';
+  const tr = s => (isRu() && RU[s]) || s;
+  /* Название: по-русски с английским оригиналом мелко */
+  const nm = s => (isRu() && RU[s] && RU[s] !== s) ? `${esc(RU[s])} <small class="en-name">${esc(s)}</small>` : esc(s);
+  const KWRU = [
+    ['Алиемус', 'Aliemus — шкала Экзальта (обычно 100)'], ['Арифметик', 'Arithmetica — энергия для розыгрыша карт'],
+    ['Ключесвет', 'Keyflare — общая шкала команды для Посса/Пробуждения'], ['Экзальт', 'Exalt — ульта персонажа, тратит Алиемус'],
+    ['Пробуждени', 'Rouse — включает усиленный пассив персонажа'], ['Щупал', 'Tentacle — Щупальца Эквора, атакуют вместе с персонажами'],
+    ['Скач', 'Leap — альтернативный усиленный эффект карты (Ультра)'], ['Квазар', 'Quasar — аналог Скачка (Ультра)'],
+    ['Отголос', 'Aftershock — эффект при сбросе карты'], ['Пожирани', 'Devour — доп. эффект Экзальта при накопленных эмбрионах (Каро)'],
+    ['Слияни', 'Embryo Fusion — накопление эмбрионов (Каро)'], ['Сопротивлени', 'Death Resistance — позволяет пережить смертельный удар'],
+    ['Уязвимост', 'Vulnerable — цель получает больше урона'], ['Слабост', 'Weakness — цель наносит меньше урона'],
+    ['Хрупкост', 'Fragile — цель получает меньше щитов'], ['Яд', 'Poison — урон со временем'], ['Кровотечени', 'Bleed — Кровотечение'],
+    ['Контратак', 'Counter — урон атакующему'], ['Сил', 'STR — Сила, прибавка к урону'], ['Бдительност', 'Alert — прибавка к щитам'],
+    ['Истощени', 'Exhaust — карта удаляется после розыгрыша'], ['Удержани', 'Retain — карта не сбрасывается в конце хода'],
+    ['Открыти', 'Discover — выбор из нескольких вариантов'], ['Мастерств', 'Realm Mastery — усиливает мировые эффекты'],
+    ['Жертв', 'Sacrifice — отложенная потеря HP'], ['Стагнаци', 'Stagnation — негативное состояние карт в руке'],
+    ['Коррози', 'Corrosion — отнимает HP у врага, получающего урон'], ['Мимолётност', 'Fleeting — эффект/исчезновение в конце хода'],
+    ['Подготовк', 'Prepare — карта срабатывает с задержкой/подготовкой'], ['Посс', 'Posse — командный навык за Ключесвет']
+  ];
+  const KWRURE = new RegExp('(?<![\\p{L}])(Алиемус\\p{L}*|Арифметик\\p{L}*|Ключесвет\\p{L}*|Экзальт\\p{L}*|Пробуждени\\p{L}*|Щупал\\p{L}*|Скач(?:ок|ка|ке|ком)|Квазар\\p{L}*|Отголос\\p{L}*|Пожирани\\p{L}*|Слияни\\p{L}* эмбрионов|Сопротивлени\\p{L}* смерти|Уязвимост\\p{L}*|Слабост\\p{L}*|Хрупкост\\p{L}*|Яд(?:а|ом|у|е)?|Кровотечени\\p{L}*|Контратак\\p{L}*|Сил(?:а|ы|у|е|ой)|Бдительност\\p{L}*|Истощени\\p{L}*|Удержани\\p{L}*|Открыти\\p{L}*|Мастерств\\p{L}* мира|Жертв(?:а|ы|у|ой|е)|Стагнаци\\p{L}*|Коррози\\p{L}*|Мимолётност\\p{L}*|Подготовк\\p{L}*|Посс(?:а|ом|е|у|ов|ы)?)(?![\\p{L}])', 'gu');
+  const kwRuTitle = w => { for (const [k, t] of KWRU) if (w.startsWith(k)) return t; return ''; };
+  const kwRu = s => esc(s).replace(KWRURE, m => `<span class="kw" title="${esc(kwRuTitle(m))}">${m}</span>`);
+  /* Описание: перевод с подсветкой русских терминов или оригинал с подсветкой английских */
+  const desc = s => (isRu() && RU[s]) ? kwRu(RU[s]) : kw(s);
+  const langBar = (extra = '') => `<div class="note langbar"><span>${isRu()
+    ? 'Описания переведены на русский. Наведите курсор на <span class="kw">подсвеченный термин</span>, чтобы увидеть пояснение.'
+    : 'Описания показаны в оригинале, как в глобальной версии игры.'} ${extra}</span>
+    <button class="btn sm" data-lang-toggle>${isRu() ? '🇬🇧 Читать на английском' : '🇷🇺 Читать на русском'}</button></div>`;
+  function setLang(l) {
+    LANG = l;
+    try { localStorage.setItem('mm-lang', l); } catch (e) { }
+    const b = document.getElementById('lang');
+    if (b) { b.textContent = l === 'ru' ? 'RU' : 'EN'; b.title = l === 'ru' ? 'Описания на русском. Нажмите для оригинала (EN)' : 'Описания на английском. Нажмите для русского'; }
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-lang-toggle]');
+    if (!b) return;
+    const y = window.scrollY;
+    setLang(isRu() ? 'en' : 'ru');
+    go.keepScroll = true; go();
+    window.scrollTo(0, y);
+  });
+
   /* ---------- Маршрутизация ---------- */
   const routes = {
     '': home, 'chars': charsPage, 'char': charPage, 'team': teamPage, 'tier': tierPage, 'lore': lorePage,
@@ -265,7 +313,7 @@
         <div class="panel"><h3>Как играть</h3><ol style="padding-left:1.2em;margin:0">${g.play.map(x => `<li style="margin:.4em 0">${esc(x)}</li>`).join('')}</ol></div>
         <div class="panel"><h3>Что умеет</h3><div class="chips">${g.f.map(featChip).join('')}</div>
           ${g.inv ? `<div class="note" style="margin-top:14px"><b>Вложения и приоритет:</b> ${esc(g.inv)}</div>` : ''}
-          <p class="faint" style="margin:.8em 0 0;font-size:.85rem">Официальное описание: <i>${esc(c.d)}</i></p></div>
+          <p class="faint" style="margin:.8em 0 0;font-size:.85rem">Официальное описание: <i>${esc(tr(c.d))}</i></p></div>
       </div>
       <div class="procon" style="margin-top:14px">
         <div class="panel pro"><h3>Сильные стороны</h3><ul class="dots">${g.pros.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
@@ -274,12 +322,13 @@
       <div class="panel" style="margin-top:14px"><h3>Хорошие напарники</h3>
         <div class="chips" style="gap:8px">${syn.map(s => charLink(s)).join('')}</div>
         <div class="row" style="margin-top:12px"><a class="btn sm" href="#/team/${[c.s, ...g.syn].slice(0, 4).join(',')}">Открыть эту четвёрку в конструкторе →</a></div></div>
-      ${c.ps.length ? `<details class="acc"><summary>Подсказка из игры (EN)</summary><div>${c.ps.map(p => `<p>${kw(p)}</p>`).join('')}</div></details>` : ''}`;
+      ${c.ps.length ? `<details class="acc"><summary>Подсказка из игры${isRu() ? '' : ' (EN)'}</summary><div>${c.ps.map(p => `<p>${desc(p)}</p>`).join('')}
+        <p><button class="btn sm" data-lang-toggle>${isRu() ? '🇬🇧 Читать на английском' : '🇷🇺 Читать на русском'}</button></p></div></details>` : ''}`;
   }
   function skillCard(x) {
     const kinds = x.k.map(k => `<span class="badge">${esc(T.cardKinds[k] || k)}</span>`).join('');
-    const cost = x.c ? `<span class="badge cost">◆ ${esc(x.c)}</span>` : (x.a ? `<span class="badge cost">⚡ ${esc(x.a.replace(' Aliemus', ''))}</span>` : '');
-    return `<div class="skill"><h4>${esc(x.n)}</h4><div class="tags">${cost}${kinds}</div><p>${kw(x.t)}</p></div>`;
+    const cost = x.c ? `<span class="badge cost" title="Стоимость в Арифметике">◆ ${esc(x.c)}</span>` : (x.a ? `<span class="badge cost" title="Стоимость в Алиемусе">⚡ ${esc(x.a.replace(' Aliemus', ''))}</span>` : '');
+    return `<div class="skill"><h4>${nm(x.n)}</h4><div class="tags">${cost}${kinds}</div><p>${desc(x.t)}</p></div>`;
   }
   function kitTab(c) {
     const basic = c.cards.filter(x => x.n === 'Strike' || x.n === 'Defense');
@@ -287,22 +336,23 @@
     const main = c.cards.filter(x => !basic.includes(x) && !rouse.includes(x) && !x.k.includes('Derived Command'));
     const der = c.cards.filter(x => x.k.includes('Derived Command'));
     const sec = (h, list, note = '') => list.length ? `<h3 style="margin-top:22px">${h}</h3>${note ? `<p class="faint">${note}</p>` : ''}<div class="kit">${list.map(skillCard).join('')}</div>` : '';
-    return `<div class="note">Тексты навыков приведены на английском, как в глобальной версии игры. Наведите курсор на <span class="kw">подсвеченный термин</span>, чтобы увидеть перевод, или откройте <a href="#/glossary">глоссарий</a>. Значения указаны для максимального уровня навыка.</div>
-      ${sec('Rouse — включение пассива', rouse, 'Разыгрывайте как можно раньше: эффект после «Rouse:» действует до конца боя.')}
-      ${sec('Exalt', c.ex, 'Over Exalt открывается максимальным Озарением.')}
+    return `${langBar('Значения указаны для максимального уровня навыка. Термины — в <a href="#/glossary">глоссарии</a>.')}
+      ${sec('Пробуждение (Rouse) — включение пассива', rouse, 'Разыгрывайте как можно раньше: эффект после «Пробуждение:» действует до конца боя.')}
+      ${sec('Экзальт (Exalt)', c.ex, 'Сверхэкзальт (Over Exalt) открывается максимальным Озарением.')}
       ${sec('Командные карты', main)}
       ${sec('Производные карты', der, 'Создаются другими картами персонажа.')}
       ${sec('Базовые карты', basic)}
-      ${c.di.length ? `<h3 style="margin-top:22px">Пространственный образ (реликвия)</h3><div class="kit">${c.di.map(d => `<div class="skill"><h4>${esc(d.name)}</h4><p>${kw(d.text)}</p></div>`).join('')}</div>` : ''}
+      ${c.di.length ? `<h3 style="margin-top:22px">Пространственный образ (реликвия)</h3><div class="kit">${c.di.map(d => `<div class="skill"><h4>${nm(d.name)}</h4><p>${desc(d.text)}</p></div>`).join('')}</div>` : ''}
       <h3 style="margin-top:22px">Озарения (Enlighten)</h3>
-      <div class="kit">${c.en.map(e => `<div class="skill"><h4><span class="badge" style="margin-right:6px">${esc(e.lv)}</span>${esc(e.name)}</h4><p>${kw(e.text)}</p></div>`).join('')}</div>
+      <div class="kit">${c.en.map(e => `<div class="skill"><h4><span class="badge" style="margin-right:6px">${esc(e.lv)}</span>${nm(e.name)}</h4><p>${desc(e.text)}</p></div>`).join('')}</div>
       <h3 style="margin-top:22px">Таланты</h3>
-      <div class="kit">${c.ta.map(e => `<div class="skill"><h4>${esc(e.name)}</h4><div class="tags"><span class="badge">${esc(e.max.replace('Max Lv.', 'Макс. ур.'))}</span></div><p>${kw(e.text)}</p></div>`).join('')}</div>`;
+      <div class="kit">${c.ta.map(e => `<div class="skill"><h4>${nm(e.name)}</h4><div class="tags"><span class="badge">${esc(e.max.replace('Max Lv.', 'Макс. ур.'))}</span></div><p>${desc(e.text)}</p></div>`).join('')}</div>
+      <div class="row" style="margin-top:18px"><button class="btn sm" data-lang-toggle>${isRu() ? '🇬🇧 Читать на английском' : '🇷🇺 Читать на русском'}</button></div>`;
   }
   function buildTab(c) {
     const ws = c.w.map(n => WHEEL[n]).filter(Boolean);
     const sig = ws.find(w => w.sig === c.n);
-    return `<div class="note">Список колёс и ковенантов — рекомендации самой игры (по данным базы). Первое колесо — самое приоритетное; именное колесо персонажа отмечено ★.</div>
+    return `${langBar()}<div class="note">Список колёс и ковенантов — рекомендации самой игры (по данным базы). Первое колесо — самое приоритетное; именное колесо персонажа отмечено ★.</div>
       <h3>Колёса судьбы</h3>
       <div class="kit">${ws.map(w => wheelCard(w, w === sig)).join('')}</div>
       <h3 style="margin-top:22px">Ковенанты</h3>
@@ -315,13 +365,13 @@
   }
   function wheelCard(w, star) {
     const who = w.sig && BYNAME[w.sig] ? ` · <a href="#/char/${BYNAME[w.sig].s}">${esc(BYNAME[w.sig].ru)}</a>` : '';
-    return `<div class="skill"><h4>${star ? '★ ' : ''}${esc(w.n)}</h4>
+    return `<div class="skill"><h4>${star ? '★ ' : ''}${nm(w.n)}</h4>
       <div class="tags">${rar(w.r)}${w.st ? `<span class="badge">${esc(T.stats[w.st] || w.st)} ${esc(w.v)}</span>` : ''}${w.rl ? realmB(w.rl) : ''}</div>
-      ${w.e.map(e => `<p style="margin:.3em 0">${kw(e)}</p>`).join('')}${who ? `<p class="faint" style="margin-top:6px;font-size:.85rem">Именное${who}</p>` : ''}</div>`;
+      ${w.e.map(e => `<p style="margin:.3em 0">${desc(e)}</p>`).join('')}${who ? `<p class="faint" style="margin-top:6px;font-size:.85rem">Именное${who}</p>` : ''}</div>`;
   }
   function covCard(c) {
-    return `<div class="skill"><h4>${esc(c.n)}</h4><div class="tags">${rar(c.r)}<span class="badge">3 шт.: ${esc(c.p3)}</span></div>
-      <p><b>6 шт.:</b> ${kw(c.p6)}</p></div>`;
+    return `<div class="skill"><h4>${nm(c.n)}</h4><div class="tags">${rar(c.r)}<span class="badge">3 шт.: ${esc(tr(c.p3))}</span></div>
+      <p><b>6 шт.:</b> ${desc(c.p6)}</p></div>`;
   }
   function infoTab(c) {
     return `<div class="grid g2">
@@ -613,6 +663,7 @@
     view.innerHTML = `<div class="crumbs"><a href="#/">Главная</a> / Колёса судьбы</div>
       <h1>Колёса судьбы</h1>
       <p class="lead">Все ${DB.wheels.length} колёс: редкость, основная характеристика и эффект (значения через «/» — по рангам возвышения). <a href="#/covenants">Ковенанты →</a></p>
+      ${langBar()}
       <div class="filters">
         <input class="input" id="q" placeholder="Поиск по названию, эффекту или персонажу…" autocomplete="off">
         <div class="frow"><span class="lbl">Редкость</span><div class="chips" id="fr"></div></div>
@@ -628,8 +679,8 @@
     function draw() {
       const q = norm(st.q);
       const l = DB.wheels.filter(w => (!st.r || w.r === st.r) && (!st.stat || w.st === st.stat) && (!st.sig || w.sig) &&
-        (!q || norm(w.n + ' ' + w.e.join(' ') + ' ' + w.sig + ' ' + (BYNAME[w.sig] ? BYNAME[w.sig].ru : '')).includes(q)))
-        .sort((a, b) => (ord[a.r] ?? 9) - (ord[b.r] ?? 9) || a.n.localeCompare(b.n));
+        (!q || norm(w.n + ' ' + (RU[w.n] || '') + ' ' + w.e.join(' ') + ' ' + w.e.map(e => RU[e] || '').join(' ') + ' ' + w.sig + ' ' + (BYNAME[w.sig] ? BYNAME[w.sig].ru : '')).includes(q)))
+        .sort((a, b) => (ord[a.r] ?? 9) - (ord[b.r] ?? 9) || tr(a.n).localeCompare(tr(b.n), 'ru'));
       $('#list').innerHTML = l.map(w => wheelCard(w, false)).join('') || '<div class="empty">Ничего не найдено</div>';
       $('#cnt').textContent = `Показано: ${l.length}`;
     }
@@ -639,6 +690,7 @@
     view.innerHTML = `<div class="crumbs"><a href="#/">Главная</a> / Ковенанты</div>
       <h1>Ковенанты</h1>
       <p class="lead">Ковенант надевается шестью пронумерованными частями. 3 части дают характеристику, 6 частей — сетовый эффект. Основная характеристика каждой части выпадает случайно из своего набора. <a href="#/wheels">← Колёса судьбы</a></p>
+      ${langBar()}
       <div class="tbl-wrap" style="margin:14px 0"><table><thead><tr><th>Часть</th><th>Возможные основные характеристики</th></tr></thead><tbody>
         <tr><td>I</td><td>Шанс крита, Крит. урон, Реген Ключесвета, Реген Алиемуса</td></tr>
         <tr><td>II</td><td>Шанс крита, Крит. урон, Мастерство мира, Добыча печатей</td></tr>
@@ -646,8 +698,8 @@
         <tr><td>IV</td><td>Реген Ключесвета, Реген Алиемуса, Мастерство мира, Добыча печатей</td></tr>
         <tr><td>V</td><td>Реген Ключесвета, Реген Алиемуса, Усиление урона, Сопр. смерти</td></tr>
         <tr><td>VI</td><td>Усиление урона, Сопр. смерти, Мастерство мира, Добыча печатей</td></tr></tbody></table></div>
-      <div class="kit">${DB.covs.map(c => `<div class="skill"><h4>${esc(c.n)}</h4><div class="tags">${rar(c.r)}<span class="badge">3 шт.: ${esc(c.p3)}</span></div>
-        <p><b>6 шт.:</b> ${kw(c.p6)}</p>${c.rec.length ? `<details style="margin-top:8px"><summary class="faint" style="cursor:pointer">Рекомендован для (${c.rec.length})</summary><div class="chips" style="margin-top:6px">${c.rec.map(n => BYNAME[n] ? `<a class="chip" href="#/char/${BYNAME[n].s}">${esc(BYNAME[n].ru)}</a>` : `<span class="chip">${esc(n)}</span>`).join('')}</div></details>` : ''}</div>`).join('')}</div>`;
+      <div class="kit">${DB.covs.map(c => `<div class="skill"><h4>${nm(c.n)}</h4><div class="tags">${rar(c.r)}<span class="badge">3 шт.: ${esc(tr(c.p3))}</span></div>
+        <p><b>6 шт.:</b> ${desc(c.p6)}</p>${c.rec.length ? `<details style="margin-top:8px"><summary class="faint" style="cursor:pointer">Рекомендован для (${c.rec.length})</summary><div class="chips" style="margin-top:6px">${c.rec.map(n => BYNAME[n] ? `<a class="chip" href="#/char/${BYNAME[n].s}">${esc(BYNAME[n].ru)}</a>` : `<span class="chip">${esc(n)}</span>`).join('')}</div></details>` : ''}</div>`).join('')}</div>`;
   }
 
   /* ---------- Глоссарий ---------- */
@@ -674,6 +726,7 @@
   const applyTheme = t => { document.documentElement.dataset.theme = t; themeBtn.textContent = t === 'light' ? '☾' : '☀'; themeBtn.title = t === 'light' ? 'Тёмная тема' : 'Светлая тема'; };
   let saved = null; try { saved = localStorage.getItem('mm-theme'); } catch (e) { }
   applyTheme(saved || (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+  setLang(LANG);
   themeBtn.addEventListener('click', () => { const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; applyTheme(t); try { localStorage.setItem('mm-theme', t); } catch (e) { } });
   const toTop = $('.toTop');
   window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 600), { passive: true });

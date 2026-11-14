@@ -37,6 +37,8 @@ for f in sorted(glob.glob(base + '/wheels/*.html')):
             effs.append(join(cur)); cur = []
     if cur: effs.append(join(cur))
     effs = [e for e in effs if e]
+    cut = next((i for i, e in enumerate(effs) if e.startswith('Lore') or e.startswith('If this page') or e == 'Support on Ko-fi'), None)
+    if cut is not None: effs = effs[:cut]
     lore = ''
     if 'Lore' in L:
         li = L.index('Lore'); le = next((k for k in range(li, len(L)) if L[k].startswith('If this page')), len(L))

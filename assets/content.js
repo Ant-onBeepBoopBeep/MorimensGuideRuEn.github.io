@@ -48,7 +48,7 @@ TXT.tags = {
 TXT.stats = {'CON':'Телосложение (CON)','ATK':'Атака (ATK)','DEF':'Защита (DEF)','Base Aliemus':'Базовый Алиемус','Crit. Rate':'Шанс крита','Crit. DMG':'Крит. урон',
   'Realm Mastery':'Мастерство мира','Aliemus Regen Lv.':'Реген Алиемуса','Keyflare Regen Lv.':'Реген Ключесвета','DMG Amplification':'Усиление урона','Death Resistance':'Сопр. смерти','Sigil Yield':'Добыча печатей'};
 TXT.profile = {'Gender':'Пол','Birthday':'День рождения','Height':'Рост','Weight':'Вес','Gi':'Gi','Illustrator':'Художник','Voice Actor':'Сэйю','Released':'Дата выхода'};
-TXT.cardKinds = {'Rouse':'Rouse','Card':'Карта','Derived Command':'Производная','Exalt':'Exalt','Over Exalt':'Over Exalt'};
+TXT.cardKinds = {'Rouse':'Пробуждение','Card':'Карта','Derived Command':'Производная','Exalt':'Экзальт','Over Exalt':'Сверхэкзальт'};
 
 /* Глоссарий: [EN, RU, объяснение] */
 TXT.glossary = [

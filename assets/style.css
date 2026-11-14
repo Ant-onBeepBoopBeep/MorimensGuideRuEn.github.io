@@ -227,3 +227,8 @@ footer .in{max-width:1240px;margin:0 auto;padding:22px 16px}
 .hl{background:color-mix(in srgb,var(--accent) 30%,transparent);border-radius:3px}
 @media print{.top,footer,.toTop{display:none}}
 main:focus{outline:none}
+
+.en-name{display:block;font-size:.74rem;font-weight:500;color:var(--faint);font-family:var(--sans);margin-top:2px}
+.langbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.langbar>span{flex:1;min-width:220px}
+#lang{font-weight:700;font-size:.8rem;letter-spacing:.04em}
